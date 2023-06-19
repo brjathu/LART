@@ -1,0 +1,42 @@
+# @package _global_
+defaults:
+  - override /hydra/launcher: submitit_local
+  - _self_
+
+# hydra:
+#   launcher:
+#     _target_: hydra_plugins.hydra_submitit_launcher.submitit_launcher.LocalLauncher
+#     submitit_folder: ${hydra.sweep.dir}/.submitit/%j
+#     timeout_min: 98
+#     cpus_per_task: 80
+#     gpus_per_node: 8
+#     tasks_per_node: 1
+#     mem_gb: null
+#     nodes: 1
+#     name: ${task_name}
+
+
+# # @package _global_
+# defaults:
+#   - override /hydra/launcher: submitit_slurm
+
+# trainer:
+#   gpus: 8
+#   max_epochs: ${datamodule.max_epochs}
+#   strategy: ddp
+#   num_nodes: 1
+#   precision: 16
+
+hydra:
+  callbacks:
+    log_job_return:
+      _target_: hydra.experimental.callbacks.LogJobReturnCallback
+  launcher:
+    gpus_per_node: ${trainer.devices}
+    tasks_per_node: ${trainer.devices}
+    nodes: 1
+    cpus_per_task: 10
+    # partition: w3,learnaccel,devaccel
+    # mem_gb: 450
+    # timeout_min: ${datamodule.timeout_min}
+    # constraint: volta32gb

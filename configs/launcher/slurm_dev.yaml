@@ -1,0 +1,22 @@
+# @package _global_
+defaults:
+  - override /hydra/launcher: submitit_slurm
+  - _self_
+
+hydra:
+  callbacks:
+    log_job_return:
+      _target_: hydra.experimental.callbacks.LogJobReturnCallback
+  launcher:
+    gpus_per_node: ${trainer.devices}
+    tasks_per_node: ${trainer.devices}
+    nodes: ${trainer.num_nodes}
+    cpus_per_task: 10
+    partition: devlab
+    timeout_min: 4320
+    constraint: 'volta32gb'
+    name: ${task_name}
+    # partition: w3,learnaccel,devaccel
+    # mem_gb: 450
+    # timeout_min: ${datamodule.timeout_min}
+    # constraint: volta32gb

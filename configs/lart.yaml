@@ -1,0 +1,212 @@
+# @package _global_
+
+defaults:
+    - launcher: default.yaml
+    - trainer: default.yaml
+
+callbacks:
+    model_checkpoint:
+        _target_: lart.utils.ema_checkpoint.EMACheckpoint    
+        dirpath: ${paths.output_dir}/checkpoints
+        filename: "epoch_{epoch:03d}"
+        monitor: "step" #"val/mAP"
+        mode: "max"
+        save_last: True
+        auto_insert_metric_name: False
+        verbose: False # verbosity mode
+        save_top_k: -1 # save k best models (determined by above metric)
+        save_weights_only: False # if True, then only the model’s weights will be saved
+        every_n_train_steps: null # number of training steps between checkpoints
+        train_time_interval: null # checkpoints are monitored at the specified time interval
+        every_n_epochs: 1 # number of epochs between checkpoints
+        save_on_train_epoch_end: True # whether to run checkpointing at the end of the training epoch or the end of validation
+
+    model_summary:
+        _target_: lightning.pytorch.callbacks.RichModelSummary
+        max_depth: 1
+
+    rich_progress_bar:
+        _target_: lightning.pytorch.callbacks.RichProgressBar
+        refresh_rate: 1
+
+    learning_rate_monitor:
+        _target_: lightning.pytorch.callbacks.LearningRateMonitor
+
+    timer:
+        _target_: lightning.pytorch.callbacks.Timer
+    
+    ema:
+      _target_: lart.utils.ema.EMA
+      decay: 0.9999
+      cpu_offload: False
+      validate_original_weights: False
+      every_n_steps: 1
+
+logger:
+    tensorboard:
+        _target_: lightning.pytorch.loggers.tensorboard.TensorBoardLogger
+        save_dir: "${paths.output_dir}/tensorboard/"
+        version: 0
+
+paths: 
+    root_dir: ${oc.env:PROJECT_ROOT}
+    data_dir: ${paths.root_dir}/data/
+    log_dir: ${paths.root_dir}/logs/
+    output_dir: ${hydra:runtime.output_dir}
+    work_dir: ${hydra:runtime.cwd}
+
+extras:
+    print_config: True
+
+hydra:
+    run:
+        dir: ${paths.log_dir}/${task_name}
+    sweep:
+        dir: ${paths.log_dir}/${task_name}
+        subdir: ${hydra.job.num}
+
+hydra_logging: colorlog
+job_logging: colorlog
+
+
+
+# task name, determines output directory path
+task_name: "1000"
+tags: ["dev"]
+# slrum_job_id: ${oc.env:SLURM_ARRAY_TASK_ID}
+
+# set False to skip model training
+train: True
+
+# evaluate on test set, using best model weights achieved during training
+# lightning chooses best weights based on the metric specified in checkpoint callback
+test: True
+
+# simply provide checkpoint path to resume training
+ckpt_path: null
+
+# seed for random number generators in pytorch, numpy and python.random
+seed: null
+
+
+datamodule:
+    _target_: lart.datamodules.phalp_datamodule.PHALPDataModule
+    cfg: ${configs}
+    train: ${train}
+
+model:
+    _target_: lart.models.lart.LART_LitModule
+    cfg: ${configs}
+
+configs:
+    data_dir: ${paths.data_dir}
+    storage_folder: "${paths.log_dir}/${task_name}/${hydra:sweep.subdir}"
+    train_dataset: ava_train,kinetics_train
+    test_dataset: ava_val
+    map_on: "AVA" # or "AVA-AK"
+    train_batch_size: 8
+    train_num_workers: 8
+    test_batch_size: 8
+    test_num_workers: 8
+    test_class: ""
+    test_batch_id: -1
+    number_of_processes: 25
+    pin_memory: True
+    full_seq_render: False
+    frame_length: 125
+    max_people: 5
+    load_other_tracks: False
+    img_size: 256
+    load_images: False
+    use_mean_std: True
+    use_mean_std_mid: False
+    frame_rate_range: 1
+    num_smpl_heads: 1
+    finetune: False
+    bottle_neck: conv
+    pos_embedding: learned
+    mask_ratio: 0.4
+    in_feat: 512
+    one_euro_filter: "pred_loca,pred_pose"
+    loss_type: "action_BCE"
+    mask_type: "random"
+    mask_type_test: "zero"
+    test_type: "track.fullframe@" 
+    encode_type: "4c"
+    masked: False 
+    weights_path: null
+    loss_on_others_action: True
+    debug: False
+    load_strict: True
+    
+    mixed_training: 0
+
+    compute_map: True
+    compute_acc: True
+    log_frequency: 100
+    hmr_model: "hmr2018"
+    loca_l1_weight: 1
+
+    action_space: "ava"
+
+    solver:
+        name: "AdamW"
+        lr: 0.0001
+        momentum: 0.9
+        decay_steps: [10,20]
+        decay_gamma: 0.1
+        layer_decay: null
+        ZERO_WD_1D_PARAM: True
+        warmup_epochs: 5
+        weight_decay: 0.05
+        scheduler: "cosine"
+        apply_linear_scaling: True
+    
+    ava:
+        sampling_factor: 1
+        num_action_classes: 80
+        num_valid_action_classes: 60
+        gt_type: "all"
+        head_dropout: 0.0
+        predict_valid: True
+        map_on: "AVA" # or "AVA-AK"
+
+    kinetics:
+        sampling_factor: 1
+        num_action_classes: 400
+
+    loss:
+        focal:
+            gamma: 2
+            alpha: 0.25
+
+    extra_feat: 
+        enable: 'joints_3D,apperance'
+        pose_shape:
+            dim: 229
+            mid_dim: 229
+            en_dim: 128
+        joints_3D:
+            dim: 135
+            mid_dim: 256
+            en_dim: 128
+        apperance:
+            dim: 2048
+            mid_dim: 512
+            en_dim: 256
+
+    transformer:
+        model: legacy
+        depth: 16
+        heads: 16
+        mlp_dim: 512
+        dim_head: 64
+        dropout: 0.1
+        emb_dropout: 0.1
+        droppath: 0.4
+        use_interaction_module: False
+        use_perceiver: False
+        use_interaction_module_action_only: False
+        conv:
+            pad: 1
+            stride: 5
