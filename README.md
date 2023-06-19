@@ -1,7 +1,8 @@
 # On the Benefits of 3D Pose and Tracking for Human Action Recognition (CVPR 2023)
 Code repository for the paper "On the Benefits of 3D Pose and Tracking for Human Action Recognition". \
 [Jathushan Rajasegaran](http://people.eecs.berkeley.edu/~jathushan/), [Georgios Pavlakos](https://geopavlakos.github.io/), [Angjoo Kanazawa](https://people.eecs.berkeley.edu/~kanazawa/), [Christoph Feichtenhofer](https://feichtenhofer.github.io/), [Jitendra Malik](http://people.eecs.berkeley.edu/~malik/). \
-[![arXiv](https://img.shields.io/badge/arXiv-2304.01199-00ff00.svg)](https://arxiv.org/abs/2304.01199)       [![Website shields.io](https://img.shields.io/website-up-down-green-red/http/shields.io.svg)](https://people.eecs.berkeley.edu/~jathushan/LART/)     [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1QRLqEAePmgS41v0KQwf87G_Ss_BLhPYs?usp=sharing)
+[![arXiv](https://img.shields.io/badge/arXiv-2304.01199-00ff00.svg)](https://arxiv.org/abs/2304.01199)       [![Website shields.io](https://img.shields.io/website-up-down-green-red/http/shields.io.svg)](https://people.eecs.berkeley.edu/~jathushan/LART/)     
+<!-- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1QRLqEAePmgS41v0KQwf87G_Ss_BLhPYs?usp=sharing) -->
  
 This code repository provides a code implementation for our paper LART (Lagrangian Action Recognition with
 Tracking), with installation, training, and evaluating on datasets, and a demo code to run on any youtube videos. 
