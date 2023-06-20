@@ -165,7 +165,7 @@ class Pose_transformer(nn.Module):
         fast_track['apperance_emb'] = []
         fast_track['action_emb'] = []
 
-        NUM_STEPS        = 30 # 5Hz
+        NUM_STEPS        = 6 # 5Hz
         NUM_FRAMES       = seq_length
         list_iter        = list(range(len(list_of_frames)//NUM_STEPS + 1))
 
@@ -286,6 +286,8 @@ class Pose_transformer(nn.Module):
 
             if(self.phalp_cfg.pose_predictor.half):
                 input_data = {k: v.cuda().half() for k, v in input_data.items()}
+            else:
+                input_data = {k: v.cuda() for k, v in input_data.items()}
 
             output, _ = self.encoder(input_data, self.cfg.mask_type_test)
             output = output[:, self.cfg.max_people:, :]
@@ -305,8 +307,8 @@ class Pose_transformer(nn.Module):
         decoded_output = self.readout_pose(STORE_OUTPUT_.cuda())
 
         # convert back to float32, due to phalp dependency
-        fast_track['pose_shape'] = decoded_output['pose_camera'][0, :fast_track['pose_shape'].shape[0], :, :].float()
-        fast_track['cam_smoothed'] = decoded_output['camera'][0, :fast_track['pose_shape'].shape[0], :, :].float()
+        fast_track['pose_shape'] = decoded_output['pose_camera'][0, :fast_track['pose_shape'].shape[0], :, :]
+        fast_track['cam_smoothed'] = decoded_output['camera'][0, :fast_track['pose_shape'].shape[0], :, :]
         fast_track['ava_action'] = decoded_output['ava_action'][0, :fast_track['pose_shape'].shape[0], :, :].float()
         
         return fast_track
