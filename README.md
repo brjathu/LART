@@ -1,8 +1,7 @@
 # On the Benefits of 3D Pose and Tracking for Human Action Recognition (CVPR 2023)
 Code repository for the paper "On the Benefits of 3D Pose and Tracking for Human Action Recognition". \
 [Jathushan Rajasegaran](http://people.eecs.berkeley.edu/~jathushan/), [Georgios Pavlakos](https://geopavlakos.github.io/), [Angjoo Kanazawa](https://people.eecs.berkeley.edu/~kanazawa/), [Christoph Feichtenhofer](https://feichtenhofer.github.io/), [Jitendra Malik](http://people.eecs.berkeley.edu/~malik/). \
-[![arXiv](https://img.shields.io/badge/arXiv-2304.01199-00ff00.svg)](https://arxiv.org/abs/2304.01199)       [![Website shields.io](https://img.shields.io/website-up-down-green-red/http/shields.io.svg)](https://people.eecs.berkeley.edu/~jathushan/LART/)     
-<!-- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1QRLqEAePmgS41v0KQwf87G_Ss_BLhPYs?usp=sharing) -->
+[![arXiv](https://img.shields.io/badge/arXiv-2304.01199-00ff00.svg)](https://arxiv.org/abs/2304.01199)       [![Website shields.io](https://img.shields.io/website-up-down-green-red/http/shields.io.svg)](https://people.eecs.berkeley.edu/~jathushan/LART/)     [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1QRLqEAePmgS41v0KQwf87G_Ss_BLhPYs?usp=sharing)
  
  [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/on-the-benefits-of-3d-pose-and-tracking-for/action-recognition-on-ava-v2-2)](https://paperswithcode.com/sota/action-recognition-on-ava-v2-2?p=on-the-benefits-of-3d-pose-and-tracking-for)
  
@@ -36,6 +35,9 @@ If you only wants to train the model and not interested in running demo on any v
 
 
 ## Demo on videos
+
+We have provided a colab notebook to run our model on any youtube video. Please see the [demo notebook](https://colab.research.google.com/drive/1QRLqEAePmgS41v0KQwf87G_Ss_BLhPYs?usp=sharing) for details. Since colab has 15 Gb memory limit, the dev branch is running on half precision. If you want to run the demo on full precision, please clone the repo and run the demo locally.
+
 Our Action recogition model uses PHALP to track people in videos, and then uses the tracklets to classify actions. `pip install -e .[demo]` will install nessory dependencies for running the demo code. Now, run `demo.py` to reconstruct, track and recognize humans in any video. Input video source may be a video file, a folder of frames, or a youtube link:
 ```bash
 # Run on video file
