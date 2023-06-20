@@ -1,3 +1,4 @@
+import gc
 import os
 import warnings
 from dataclasses import dataclass
@@ -5,8 +6,9 @@ from pathlib import Path
 from typing import Optional
 
 import hydra
+import torch
 from hydra.core.config_store import ConfigStore
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from phalp.configs.base import CACHE_DIR, FullConfig
 from phalp.models.hmar.hmr import HMR2018Predictor
 from phalp.trackers.PHALP import PHALP
@@ -63,6 +65,9 @@ class LART(HMR2_4dhuman):
         self.cached_download_from_drive(download_files)
         super().__init__(cfg)
 
+    def setup_detectron2(self): pass
+    def setup_detectron2_with_RPN(self): pass
+
     def setup_predictor(self):
         # setup predictor model witch predicts actions from poses
         log.info("Loading Predictor model...")
@@ -90,12 +95,20 @@ def main(cfg: DictConfig) -> Optional[float]:
     phalp_tracker = HMR2_4dhuman(cfg)
     _, pkl_path = phalp_tracker.track()
     del phalp_tracker
+    gc.collect()
+    with torch.no_grad():
+        torch.cuda.empty_cache()
 
+    
     # Setup the LART model and run it on the tracked video to get the action predictions
+    cfg = OmegaConf.structured(OmegaConf.to_yaml(cfg))
     cfg.render.enable = True
     cfg.render.colors = 'slahmr'
     cfg.pose_predictor.config_path = f"{CACHE_DIR}/phalp/ava/lart_mvit.config"
     cfg.pose_predictor.weights_path = f"{CACHE_DIR}/phalp/ava/lart_mvit.ckpt"
+    try:    cfg.pose_predictor.half = cfg.half
+    except: cfg.pose_predictor.half = False
+    log.info(f"Half precision: {cfg.pose_predictor.half}")
     lart_model = LART(cfg)
     lart_model.setup_postprocessor()
     lart_model.postprocessor.run_lart(pkl_path)

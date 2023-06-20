@@ -43,9 +43,7 @@ class Pose_transformer(nn.Module):
         self.mean_, self.std_ = self.mean_.unsqueeze(0), self.std_.unsqueeze(0)   
         self.register_buffer('mean', self.mean_)
         self.register_buffer('std', self.std_)
-        
-        self.smpl = phalp_tracker.HMAR.smpl
-            
+                    
     def load_weights(self, path):
         checkpoint_file = torch.load(path)
         checkpoint_file_filtered = {k[8:]: v for k, v in checkpoint_file['state_dict'].items()} # remove "encoder." from keys
@@ -157,6 +155,8 @@ class Pose_transformer(nn.Module):
         cfg.TEST.CHECKPOINT_FILE_PATH=f"{CACHE_DIR}/phalp/ava/mvit.pyth"
 
         video_model    = Predictor(cfg=cfg, gpu_id=None)
+        if(self.phalp_cfg.pose_predictor.half):
+            video_model.model = video_model.model.half()
         seq_length     = cfg.DATA.NUM_FRAMES * cfg.DATA.SAMPLING_RATE
 
         list_of_frames = fast_track['frame_name']
@@ -165,7 +165,7 @@ class Pose_transformer(nn.Module):
         fast_track['apperance_emb'] = []
         fast_track['action_emb'] = []
 
-        NUM_STEPS        = 6 # 5Hz
+        NUM_STEPS        = 30 # 5Hz
         NUM_FRAMES       = seq_length
         list_iter        = list(range(len(list_of_frames)//NUM_STEPS + 1))
 
@@ -198,7 +198,7 @@ class Pose_transformer(nn.Module):
             # img1 = cv2.rectangle(img1, (mid_bbox_[0, 0], mid_bbox_[0, 1]), (mid_bbox_[0, 2], mid_bbox_[0, 3]), (0, 255, 0), 2)
             # cv2.imwrite("test.png", img1)
             with torch.no_grad():
-                task_      = SlowFastWrapper(t_, cfg, list_of_all_frames, mid_bbox_, video_model, center_crop=center_crop)
+                task_      = SlowFastWrapper(t_, cfg, list_of_all_frames, mid_bbox_, video_model, center_crop=center_crop, half=self.phalp_cfg.pose_predictor.half)
                 preds      = task_.action_preds[0]
                 feats      = task_.action_preds[1]
                 preds      = preds.cpu().numpy()
@@ -247,7 +247,12 @@ class Pose_transformer(nn.Module):
         WINDOW_ = window
         w_steps = range(S_, S_+fl, STEP_)
         assert 2*WINDOW_ + STEP_ < self.cfg.frame_length
-        STORE_OUTPUT_ = torch.zeros(1, fl, self.cfg.in_feat)
+
+        if(self.phalp_cfg.pose_predictor.half):
+            self.encoder = self.encoder.half()
+            STORE_OUTPUT_ = torch.zeros(1, fl, self.cfg.in_feat, dtype=torch.float16)
+        else:
+            STORE_OUTPUT_ = torch.zeros(1, fl, self.cfg.in_feat, dtype=torch.float32)
 
         for w_ in w_steps:
 
@@ -279,7 +284,8 @@ class Pose_transformer(nn.Module):
                 apperance_[:, :end_-start_, :, :] = torch.tensor(apperance_feat_all[:, start_:end_, :, :])
                 input_data["apperance_emb"] = apperance_
 
-            input_data = {k: v.cuda() for k, v in input_data.items()}
+            if(self.phalp_cfg.pose_predictor.half):
+                input_data = {k: v.cuda().half() for k, v in input_data.items()}
 
             output, _ = self.encoder(input_data, self.cfg.mask_type_test)
             output = output[:, self.cfg.max_people:, :]
@@ -298,8 +304,9 @@ class Pose_transformer(nn.Module):
 
         decoded_output = self.readout_pose(STORE_OUTPUT_.cuda())
 
-        fast_track['pose_shape'] = decoded_output['pose_camera'][0, :fast_track['pose_shape'].shape[0], :, :]
-        fast_track['cam_smoothed'] = decoded_output['camera'][0, :fast_track['pose_shape'].shape[0], :, :]
-        fast_track['ava_action'] = decoded_output['ava_action'][0, :fast_track['pose_shape'].shape[0], :, :]
+        # convert back to float32, due to phalp dependency
+        fast_track['pose_shape'] = decoded_output['pose_camera'][0, :fast_track['pose_shape'].shape[0], :, :].float()
+        fast_track['cam_smoothed'] = decoded_output['camera'][0, :fast_track['pose_shape'].shape[0], :, :].float()
+        fast_track['ava_action'] = decoded_output['ava_action'][0, :fast_track['pose_shape'].shape[0], :, :].float()
         
         return fast_track

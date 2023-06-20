@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from phalp.utils.io import IO_Manager
 
-def SlowFastWrapper(t, cfg, list_of_imgs, mid_frame_bboxes, video_model, center_crop=False):            
+def SlowFastWrapper(t, cfg, list_of_imgs, mid_frame_bboxes, video_model, center_crop=False, half=False):            
     from slowfast.visualization.utils import TaskInfo
 
     buffer_size    = cfg.DEMO.BUFFER_SIZE
@@ -23,6 +23,9 @@ def SlowFastWrapper(t, cfg, list_of_imgs, mid_frame_bboxes, video_model, center_
 
         th_1 = 1.2
         th_2 = 0.8
+        if(half):
+            th_1 = 1.0
+            th_2 = 1.0
         
         if(center_crop):
             h, w = img_.shape[:2]
@@ -58,6 +61,6 @@ def SlowFastWrapper(t, cfg, list_of_imgs, mid_frame_bboxes, video_model, center_
     task.add_frames(t, images)
     task.add_bboxes(torch.from_numpy(mid_frame_bboxes).float().cuda())
     with torch.no_grad(): 
-        task = video_model(task)
+        task = video_model(task, half=half)
     
     return task

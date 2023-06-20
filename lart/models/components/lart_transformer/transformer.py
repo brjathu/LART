@@ -266,11 +266,14 @@ class lart_transformer(nn.Module):
                 indexes_mask   = indexes[torch.randperm(indexes.shape[0])[:int(indexes.shape[0]*self.cfg.mask_ratio)]]
                 mask_detection[i, indexes_mask[:, 0], indexes_mask[:, 1], indexes_mask[:, 2]] = 1.0
         elif(mask_type=="zero"):
+            dtype = data['has_detection'].dtype
             has_detection  = data['has_detection']==0
             mask_detection = data['mask_detection']
             indexes_mask   = has_detection.nonzero()
             mask_detection[indexes_mask[:, 0], indexes_mask[:, 1], indexes_mask[:, 2], :] = 1.0
             has_detection = has_detection*0 + 1.0
+            mask_detection = mask_detection.to(dtype)
+            has_detection  = has_detection.to(dtype)
         else:
             raise NotImplementedError
 
@@ -279,20 +282,21 @@ class lart_transformer(nn.Module):
     def forward(self, data, mask_type="random"):
         
         # prepare the input data and masking
+        dtype = data['pose_shape'].dtype
         data, has_detection, mask_detection = self.bert_mask(data, mask_type)
 
         # encode the input pose tokens
-        pose_   = data['pose_shape'].float()
+        pose_   = data['pose_shape'].to(dtype)
         pose_en = self.pose_shape_encoder(pose_)
         x       = pose_en
 
         if("joints_3D" in self.cfg.extra_feat.enable):          
-            joint_ = data['joints_3D'].float()
+            joint_ = data['joints_3D'].to(dtype)
             joint_en = self.joint_encoder(joint_)            
             x = torch.cat((x, joint_en), dim=-1)
 
         if("apperance" in self.cfg.extra_feat.enable):
-            apperance_ = data['apperance_emb'].float()
+            apperance_ = data['apperance_emb'].to(dtype)
             apperance_en = self.apperance_encoder(apperance_)
             x = torch.cat((x, apperance_en), dim=-1)
         
