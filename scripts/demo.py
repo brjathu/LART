@@ -96,6 +96,7 @@ def main(cfg: DictConfig) -> Optional[float]:
     cfg.render.colors = 'slahmr'
     cfg.pose_predictor.config_path = f"{CACHE_DIR}/phalp/ava/lart_mvit.config"
     cfg.pose_predictor.weights_path = f"{CACHE_DIR}/phalp/ava/lart_mvit.ckpt"
+    cfg.post_process.save_fast_tracks = True
     lart_model = LART(cfg)
     lart_model.setup_postprocessor()
     lart_model.postprocessor.run_lart(pkl_path)

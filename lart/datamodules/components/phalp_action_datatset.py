@@ -253,7 +253,7 @@ class PHALP_action_dataset(Dataset):
             if(appe_idx[i]!=-1):
                 ava_pseudo_labels_[i, 0, :] = ava_pseudo_labels[appe_idx[i]][0]
         
-        ava_pseudo_vectors_ = np.zeros((end_frame-start_frame, 1, 2048))
+        ava_pseudo_vectors_ = np.zeros((end_frame-start_frame, 1, self.opt.extra_feat.apperance.dim))
         for i in range(ava_pseudo_vectors_.shape[0]):
             if(appe_idx[i]!=-1):
                 ava_pseudo_vectors_[i, 0, :] = appe_feat[appe_idx[i]][0]
@@ -331,7 +331,7 @@ class PHALP_action_dataset(Dataset):
                     if(other_appe_idx[i]!=-1):
                         other_ava_pseudo_labels_[i, 0, :] = other_ava_pseudo_labels[other_appe_idx[i]][0]
                 
-                other_ava_pseudo_vectors_ = np.zeros((other_end_frame-other_start_frame, 1, 2048))
+                other_ava_pseudo_vectors_ = np.zeros((other_end_frame-other_start_frame, 1, self.opt.extra_feat.apperance.dim))
                 for i in range(other_ava_pseudo_vectors_.shape[0]):
                     if(other_appe_idx[i]!=-1):
                         other_ava_pseudo_vectors_[i, 0, :] = other_appe_feat[other_appe_idx[i]][0]

@@ -164,6 +164,8 @@ class Pose_transformer(nn.Module):
         list_of_fids   = fast_track['fid']
         fast_track['apperance_emb'] = []
         fast_track['action_emb'] = []
+        fast_track['apperance_index'] = []
+        fast_track['has_gt'] = []
 
         NUM_STEPS        = 6 # 5Hz
         NUM_FRAMES       = seq_length
@@ -207,11 +209,14 @@ class Pose_transformer(nn.Module):
             for frame_ in time_stamp_:
                 fast_track['apperance_emb'].append(feats)
                 fast_track['action_emb'].append(preds)
+                fast_track['apperance_index'].append(t_*1000)     
+                fast_track['has_gt'].append(1)     
         
         assert len(fast_track['apperance_emb']) == len(fast_track['frame_name'])
-        assert len(fast_track['action_emb']) == len(fast_track['frame_name'])
         fast_track['apperance_emb'] = np.array(fast_track['apperance_emb'])
         fast_track['action_emb'] = np.array(fast_track['action_emb'])
+        fast_track['apperance_index'] = np.array(fast_track['apperance_index']).reshape(-1, 1, 1)
+        fast_track['has_gt'] = np.array(fast_track['has_gt']).reshape(-1, 1, 1)
         
         return fast_track
 

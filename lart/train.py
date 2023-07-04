@@ -157,6 +157,11 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
 @hydra.main(version_base="1.2", config_path="../configs", config_name="train.yaml")
 def main(cfg: DictConfig) -> Optional[float]:
 
+    # create data folder if it does not exist
+    os.makedirs("data", exist_ok=True)
+    os.makedirs("data/_TMP", exist_ok=True)
+    os.makedirs("data/bad_files", exist_ok=True)
+
     # train the model
     metric_dict, _ = train(cfg)
 
