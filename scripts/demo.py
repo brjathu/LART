@@ -83,9 +83,9 @@ def main(cfg: DictConfig) -> Optional[float]:
     """Main function for running the PHALP tracker."""
 
     # # Setup the tracker and track the video
-    cfg.phalp.low_th_c = 0.5
-    cfg.phalp.small_w = 20
-    cfg.phalp.small_h = 20
+    # cfg.phalp.low_th_c = 0.5
+    cfg.phalp.small_w = 100
+    cfg.phalp.small_h = 200
     cfg.render.enable = False
     phalp_tracker = HMR2_4dhuman(cfg)
     _, pkl_path = phalp_tracker.track()
@@ -94,6 +94,7 @@ def main(cfg: DictConfig) -> Optional[float]:
     # Setup the LART model and run it on the tracked video to get the action predictions
     cfg.render.enable = True
     cfg.render.colors = 'slahmr'
+    cfg.render.type = "GHOST_MESH"
     cfg.pose_predictor.config_path = f"{CACHE_DIR}/phalp/ava/lart_mvit.config"
     cfg.pose_predictor.weights_path = f"{CACHE_DIR}/phalp/ava/lart_mvit.ckpt"
     cfg.post_process.save_fast_tracks = True
