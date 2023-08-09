@@ -88,9 +88,9 @@ def main(cfg: DictConfig) -> Optional[float]:
     """Main function for running the PHALP tracker."""
 
     # # Setup the tracker and track the video
-    cfg.phalp.low_th_c = 0.5
-    cfg.phalp.small_w = 20
-    cfg.phalp.small_h = 20
+    # cfg.phalp.low_th_c = 0.5
+    cfg.phalp.small_w = 50
+    cfg.phalp.small_h = 50
     cfg.render.enable = False
     phalp_tracker = HMR2_4dhuman(cfg)
     _, pkl_path = phalp_tracker.track()
