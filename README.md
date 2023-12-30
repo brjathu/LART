@@ -60,6 +60,8 @@ We are releasing about 1.5 million tracks of people from Kinetics 400 and AVA da
 ./scripts/download_data.sh
 ```
 
+Please follow the "Demo on videos" section before proceeding with the "Training and Evaluation" section. This is essential to download the required files. 
+
 ### Train LART model
 
 For single node training, run the following command. This will evaulate the model at every epochs and compute the mean average precision on the validation set. 
